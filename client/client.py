@@ -1,13 +1,31 @@
 import socket
-HOST='127.0.0.1'
-PORT=9000
+import threading
 
-client_socket=socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
-# socket.AF_INET      # IPv4 addressing
-# socket.SOCK_STREAM  # STREAM = TCP
+HOST = "127.0.0.1"
+PORT = 9000
 
 
-client_socket.connect((HOST,PORT))
-while True:
-    msg=input("enter a message ")
-    client_socket.sendall(msg.encode())
+def receive_messages(sock):
+    while True:
+        try:
+            message = sock.recv(1024)
+            if message:
+                print(message.decode())
+        except:
+            break
+
+
+def start_client():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((HOST, PORT))
+
+    thread = threading.Thread(target=receive_messages, args=(sock,), daemon=True)
+    thread.start()
+
+    while True:
+        msg = input()
+        sock.sendall(msg.encode())
+
+
+if __name__ == "__main__":
+    start_client()
